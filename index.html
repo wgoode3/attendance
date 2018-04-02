@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Attendance Sheet</title>
+	<style type="text/css">
+		.row {
+			display: inline-block;
+			min-height: 1rem;
+			min-width: 500px;		
+		}
+		.cell {
+			display: inline-block;
+			min-height: calc(1rem + 3px);
+			width: 50px;
+			vertical-align: top;
+			border: 1px solid #999;
+			padding: 3px;
+			overflow: hidden;
+		}
+		[data-col="0"] {
+			min-width: 150px;
+		}
+		.selected {
+			border: 1px solid blue;
+			background-color: #eee;
+		}
+	</style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+	const students = [
+		"Lark",
+		"Mark",
+		"John",
+		"Zoya",
+		"Sergio",
+		"Paul",
+		"Thomas",
+		"Hilton",
+		"Shelia",
+		"Patrick",
+		"James",
+		"Eirika",
+		"Yevgeniy",
+		"Yonis",
+		"Temmuujin"
+	];
+
+	const dates = [
+		"Mar 05",
+		"Mar 06",
+		"Mar 07",
+		"Mar 08",
+		"Mar 09",
+		"Mar 12",
+		"Mar 13",
+		"Mar 14",
+		"Mar 15",
+		"Mar 16",
+		"Mar 19",
+		"Mar 20",
+		"Mar 21",
+		"Mar 22",
+		"Mar 23",
+		"Mar 26",
+		"Mar 27",
+		"Mar 28",
+		"Mar 29",
+		"Mar 30"
+	]
+</script>
+
+<div id="sheet">Content!</div>
+
+<script type="text/javascript">
+	
+	var selectedCell = [1,1];
+	let table = `<div id="table">`;
+	let row = -1; 
+	let col = 0;
+	table += `<div class="row"><div class="cell" data-row="${++row}" data-col="${col++}">Student name:</div>`;
+	for(let date of dates){
+		table += `<div class="cell" data-row="0" data-col="${col++}">${date}</div>`;	
+	}
+	table += `</div>`
+
+	for(let student of students){
+		col = 0;
+		table += `<div class="row"><div class="cell" data-row="${++row}" data-col="${col++}">${student}</div>`;
+		for(let date of dates){
+			table += `<div class="cell" data-row="${row}" data-col="${col++}"></div>`;
+		}
+		table += `</div>`
+	}
+	table += `</div>`;
+	table += `</div>`;
+
+	document.getElementById("sheet").innerHTML = table; 
+
+	const cells = document.getElementsByClassName("cell");
+	for(let cell of cells){
+		cell.addEventListener("click", function(e){
+			for(let cell of cells){
+				cell.classList.remove("selected");
+			}
+			e.target.classList.add("selected");
+			selectedCell = [parseInt(e.target.dataset.row), parseInt(e.target.dataset.col)];
+		});
+	}
+
+	function addStyle(){
+		selected = document.querySelector(`[data-row="${selectedCell[0]}"][data-col="${selectedCell[1]}"]`);
+		for(let cell of cells){
+			cell.classList.remove("selected");
+		}
+		selected.classList.add("selected");
+	}
+	addStyle();
+
+	document.onkeydown = function(e){
+		selected = document.querySelector(`[data-row="${selectedCell[0]}"][data-col="${selectedCell[1]}"]`);
+		// up
+		if(e.keyCode == 38){
+			selectedCell[0] > 1 ? selectedCell[0] -= 1 : selectedCell[0];
+			addStyle();
+		}
+		// down
+		if(e.keyCode == 40){
+			selectedCell[0] < students.length ? selectedCell[0] += 1 : selectedCell[0];
+			addStyle();
+		}
+		// left
+		if(e.keyCode == 37){
+			selectedCell[1] > 1 ? selectedCell[1] -= 1 : selectedCell[1];
+			addStyle();
+		}
+		// right
+		if(e.keyCode == 39){
+			selectedCell[1] < dates.length ? selectedCell[1] += 1 : selectedCell[1];
+			addStyle();
+		}
+		if(e.keyCode == 8){
+			selected.innerHTML = "";
+		}
+	}
+
+	document.onkeypress = function(e){
+		selected = document.querySelector(`[data-row="${selectedCell[0]}"][data-col="${selectedCell[1]}"]`);
+		selected.innerHTML += e.key;
+		// need to exclude things like enter, delete
+	}
+
+</script>
+
+</body>
+</html>
