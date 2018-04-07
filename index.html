@@ -3,10 +3,25 @@
 <head>
 	<title>Attendance Sheet</title>
 	<style type="text/css">
+		* {
+			font-size: 16px;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+		#sheet {
+			border: 1px solid #999;
+			width: 1318px;
+		}
+		#table {
+			display: inline-block;
+			width: 1318px;
+		}
 		.row {
 			display: inline-block;
 			min-height: 1rem;
 			min-width: 500px;		
+		}
+		.cell:nth-child(even) {
+    		background-color: #eee;
 		}
 		.cell {
 			display: inline-block;
@@ -20,84 +35,120 @@
 		[data-col="0"] {
 			min-width: 150px;
 		}
+		[data-add="true"] {
+			width: 30px;
+			height: 30px;
+			padding: 2px;
+			font-size: 1.5rem;
+			font-weight: bold;
+			color: #fff;
+			background-color: #0a0;
+			border-radius: 50%;
+			border: 0px solid transparent;
+		}
 		.selected {
 			border: 1px solid blue;
-			background-color: #eee;
+			background-color: #eef !important;
+		}
+		abbr {
+			/*text-decoration: none;*/
+			cursor: help;
 		}
 	</style>
 </head>
 <body>
 
-<script type="text/javascript">
-
-	const students = [
-		"Lark",
-		"Mark",
-		"John",
-		"Zoya",
-		"Sergio",
-		"Paul",
-		"Thomas",
-		"Hilton",
-		"Shelia",
-		"Patrick",
-		"James",
-		"Eirika",
-		"Yevgeniy",
-		"Yonis",
-		"Temmuujin"
-	];
-
-	const dates = [
-		"Mar 05",
-		"Mar 06",
-		"Mar 07",
-		"Mar 08",
-		"Mar 09",
-		"Mar 12",
-		"Mar 13",
-		"Mar 14",
-		"Mar 15",
-		"Mar 16",
-		"Mar 19",
-		"Mar 20",
-		"Mar 21",
-		"Mar 22",
-		"Mar 23",
-		"Mar 26",
-		"Mar 27",
-		"Mar 28",
-		"Mar 29",
-		"Mar 30"
-	]
-</script>
-
 <div id="sheet">Content!</div>
 
+<p><button data-add="true">+</button> Add a student</p>
+
+
 <script type="text/javascript">
+
+	// store the contents of a cell in a class
+	function Cell(row, col, data, text, note){
+		this.row = row;
+		this.col = col;
+		this.data = data;
+		this.text = text;
+		this.note = note;
+	}
+
+
+	// generate the table of attendence data
+	function genTable(students, start, end){
+		
+		// helper arrays for date formatting (might be a good idea to use moment.js)
+		const aMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+		const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+		const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+		let month = [start];
+		let day;
+
+		// generates the date range
+		while(start.getTime() < end.getTime()){
+			day = new Date(start);
+			day.setDate(start.getDate()+1);
+			if(day.getDay() != 0 && day.getDay() != 6){
+				month.push(day);
+			}
+			start = day;
+		}
+
+		let attendence = [];
+		let header = [];
+		header.push(new Cell(0, 0, "", "Student Name:", ""));
+		for(let i=0; i<month.length; i++){
+			let day = month[i];
+			header.push(
+				new Cell(
+					0, 
+					i+1, 
+					"", 
+					`<abbr title="${days[day.getDay()]} ${months[day.getMonth()]} ${day.getDate()}, ${day.getFullYear()}">${aMonths[day.getMonth()]} ${day.getDate()}</abbr>`, 
+					""
+				)
+			);
+		}
+		attendence.push(header);
+
+		for(let i=0; i<students.length; i++){
+			let row = [];
+			row.push(new Cell(i+1, 0, "", students[i], ""));
+			for(let j=0; j<month.length; j++){
+				row.push(new Cell(i+1, j+1, "", "", ""));
+			}
+			attendence.push(row);
+		}
+
+		return attendence;
+	}
+
+	// draw the table onto the selected element
+	function drawTable(id, attendence){
+		let t = '<div id="table">'
+		for(let i=0; i<attendence.length; i++){
+			t += `<div class="row">`;
+			for(let j=0; j<attendence[i].length; j++){
+				t += `<div class="cell" data-row="${attendence[i][j].row}" data-col="${attendence[i][j].col}">${attendence[i][j].text}</div>`;
+			}
+			t += `</div>`;
+		}
+		t += '</div>';
+		document.getElementById(id).innerHTML = t; 
+	}
+
+	let attendence = genTable(
+		["Lark", "Mark", "John", "Zoya", "Sergio", "Paul", "Thomas", "Hilton", "Shelia", "Patrick", "James", "Eirika", "Yevgeniy", "Yonis", "Temmuujin"],
+		new Date('2018-03-05T00:00:00'),
+		new Date('2018-03-30T00:00:00')
+	);
+
+	// console.log(attendence);
+	drawTable("sheet", attendence);
 	
 	var selectedCell = [1,1];
-	let table = `<div id="table">`;
-	let row = -1; 
-	let col = 0;
-	table += `<div class="row"><div class="cell" data-row="${++row}" data-col="${col++}">Student name:</div>`;
-	for(let date of dates){
-		table += `<div class="cell" data-row="0" data-col="${col++}">${date}</div>`;	
-	}
-	table += `</div>`
-
-	for(let student of students){
-		col = 0;
-		table += `<div class="row"><div class="cell" data-row="${++row}" data-col="${col++}">${student}</div>`;
-		for(let date of dates){
-			table += `<div class="cell" data-row="${row}" data-col="${col++}"></div>`;
-		}
-		table += `</div>`
-	}
-	table += `</div>`;
-	table += `</div>`;
-
-	document.getElementById("sheet").innerHTML = table; 
 
 	const cells = document.getElementsByClassName("cell");
 	for(let cell of cells){
@@ -119,6 +170,7 @@
 	}
 	addStyle();
 
+	// navigate the spreadsheet using arrow keys
 	document.onkeydown = function(e){
 		selected = document.querySelector(`[data-row="${selectedCell[0]}"][data-col="${selectedCell[1]}"]`);
 		// up
@@ -128,7 +180,7 @@
 		}
 		// down
 		if(e.keyCode == 40){
-			selectedCell[0] < students.length ? selectedCell[0] += 1 : selectedCell[0];
+			selectedCell[0] < attendence.length-1 ? selectedCell[0] += 1 : selectedCell[0];
 			addStyle();
 		}
 		// left
@@ -138,7 +190,7 @@
 		}
 		// right
 		if(e.keyCode == 39){
-			selectedCell[1] < dates.length ? selectedCell[1] += 1 : selectedCell[1];
+			selectedCell[1] < attendence[0].length-1 ? selectedCell[1] += 1 : selectedCell[1];
 			addStyle();
 		}
 		if(e.keyCode == 8){
@@ -146,10 +198,19 @@
 		}
 	}
 
+	// put text into cells (excluding some keys)
 	document.onkeypress = function(e){
-		selected = document.querySelector(`[data-row="${selectedCell[0]}"][data-col="${selectedCell[1]}"]`);
-		selected.innerHTML += e.key;
-		// need to exclude things like enter, delete
+		// keycodes to exclude
+		let valid = true;
+		for(let code of [8,9,13,27,37,38,39,40,46]){
+			if(code === e.keyCode){
+				valid = false;
+			}
+		}
+		if(valid){
+			selected = document.querySelector(`[data-row="${selectedCell[0]}"][data-col="${selectedCell[1]}"]`);
+			selected.innerHTML += e.key;
+		}
 	}
 
 </script>
