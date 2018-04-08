@@ -90,6 +90,7 @@ let attendence = genTable(
 drawTable("sheet", attendence);
 
 var selectedCell = [1,1];
+let noteMode = false;
 
 const cells = document.getElementsByClassName("cell");
 for(let cell of cells){
@@ -137,6 +138,15 @@ for(let cell of cells){
 		e.target.classList.add("selected");
 		selectedCell = [parseInt(e.target.dataset.row), parseInt(e.target.dataset.col)];
 		console.log("right click");
+		console.log(e.clientX, e.clientY);
+		let note = document.getElementById("note");
+		// note.childNodes[3].value = "Your note here";
+		note.style.display = "inline-block";
+		note.style.top = `${e.clientY}px`;
+		note.style.left = `${e.clientX}px`;
+		noteMode = true;
+		// setTimeout(function(){ document.querySelector("textarea").focus(); }, 10);
+		note.childNodes[3].focus();
 	});
 	// double click event
 	cell.addEventListener('dblclick', function(e){
@@ -212,7 +222,7 @@ document.onkeypress = function(e){
 			valid = false;
 		}
 	}
-	if(valid){
+	if(valid && !noteMode){
 		selected = document.getElementsByClassName("selected");
 		for(let cell of selected){
 			cell.innerHTML += e.key;
@@ -267,4 +277,14 @@ document.addEventListener("mousemove", function(e){
 			}
 		}
 	}
+});
+
+// what to do when closing the note
+const close = document.querySelector("[data-close='true']");
+close.addEventListener("click", function(e){
+	console.log(e.target.parentNode.childNodes[3].value);
+	e.target.parentNode.childNodes[3].value = "";
+	let note = document.getElementById("note");
+	note.style.display = "none";
+	noteMode = false;
 });
